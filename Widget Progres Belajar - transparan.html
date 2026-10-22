@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Peta Progres Belajar</title>
+<meta name="color-scheme" content="light">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#e3f1ef; --card:#ffffff; --fg:#10272b; --muted:#4f6a6d; --line:#cfe3e0;
+  --a:#0e8a7d; --a2:#14b8a6; --head:#0b5f58;
+  --t1:#9fdcd2; --t2:#c6ece6; --td1:#7ccfc3; --td2:#a6e1d8;   /* baris tua (normal / selesai) */
+  --m1:#d6f1ed; --m2:#effaf8; --md1:#b9e6df; --md2:#d8f2ee;   /* baris muda (normal / selesai) */
+  --font-d:"Bricolage Grotesque","Trebuchet MS",sans-serif; --font-b:"Source Sans 3","Segoe UI",sans-serif;
+}
+/* Mode gelap otomatis dinonaktifkan: latar e-book tetap terang, dan iframe transparan tidak boleh memakai warna tulisan terang. Mode gelap manual masih ada lewat data-theme="dark". */
+:root[data-theme="dark"]{
+  --bg:#0a1718; --card:#112326; --fg:#e4f2f0; --muted:#9bbab6; --line:#2a4a4c;
+  --a:#2dd4bf; --a2:#5eead4; --head:#2dd4bf;
+  --t1:#1d5654; --t2:#17403f; --td1:#26706b; --td2:#1d5654;
+  --m1:#143a3b; --m2:#112d2f; --md1:#1c5250; --md2:#16403f; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;background:transparent}
+body{background:transparent;color:var(--fg);font-family:var(--font-b);line-height:1.3;overflow:hidden}
+
+/* Widget mengisi 100% kotak iframe. Semua ukuran dalam em/%, tanpa piksel tetap dan tanpa skala JavaScript.
+   Ukuran huruf dasar mengikuti sisi terpendek kotak (vmin), dibatasi agar tetap terbaca. */
+.w{
+  width:100%;height:100%;max-width:40rem;margin-inline:auto;
+  font-size:clamp(.72rem,.5rem + 1.15vmin,1rem);
+  padding:.9em .85em .65em;
+  background:transparent;border:1.5px solid var(--a);border-radius:.9em;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.head{display:flex;flex-direction:column;gap:.1em}
+.eye{font-size:.62em;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--a)}
+h1{font-family:var(--font-d);font-size:1.5em;line-height:1.1;margin:0;color:var(--head)}
+.sub{margin:.2em 0 0;font-size:.8em;color:var(--muted)}
+.meter{display:flex;align-items:center;gap:.6em;margin:.65em 0 .7em}
+.bar{flex:1;height:.75em;border-radius:.4em;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--a2));transition:width .3s}
+.cnt{font-size:.85em;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* Kisi potret (vertikal): paling banyak 2 kolom, 1 kolom di layar sempit, berapa pun lebar kotaknya.
+   Baris mengisi tinggi yang tersedia; bila tidak muat, hanya menggulir ke bawah (tidak pernah ke samping). */
+.g{
+  flex:1;min-height:0;display:grid;gap:.4em;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-auto-rows:minmax(2.6em,1fr);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+}
+.c{--c:var(--a);--x1:var(--m1);--x2:var(--m2);--d1:var(--md1);--d2:var(--md2);display:flex;align-items:center;gap:.5em;min-width:0;padding:.3em .5em;border-radius:.75em;border:1.5px solid var(--c);background:linear-gradient(135deg,var(--x1),var(--x2));color:var(--fg);font:inherit;font-size:.9em;text-align:left;cursor:pointer}
+.c.tua{--x1:var(--t1);--x2:var(--t2);--d1:var(--td1);--d2:var(--td2)}
+.c.wide{grid-column:1 / -1}
+.c:focus-visible{outline:3px solid var(--fg);outline-offset:1px}
+.ico{flex:none;width:2em;height:2em;border-radius:.6em;background:linear-gradient(135deg,var(--a),var(--a2));display:grid;place-items:center}
+.ico svg{width:1.2em;height:1.2em;stroke:var(--card);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.l{flex:1;min-width:0;line-height:1.15;overflow-wrap:break-word}
+.k{flex:none;width:1.25em;height:1.25em;border-radius:50%;border:1.8px solid var(--c);background:var(--card);display:grid;place-items:center}
+.c[aria-pressed="true"] .k{background:var(--a)}
+.c[aria-pressed="true"] .k:after{content:"";width:.6em;height:.3em;border-left:2px solid var(--card);border-bottom:2px solid var(--card);transform:rotate(-45deg) translate(.05em,-.08em)}
+.c[aria-pressed="true"]{background:linear-gradient(135deg,var(--d1),var(--d2))}
+.c[aria-pressed="true"] .l{opacity:.75}
+.foot{display:flex;justify-content:space-between;gap:.6em;margin-top:.5em;font-size:.72em;color:var(--muted)}
+.rs{background:none;border:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap}
+
+/* ===== Media queries (em = 16px dasar peramban; mengikuti ukuran kotak iframe) ===== */
+
+/* Layar sangat sempit (sekitar 320 px ke bawah): daftar tersusun vertikal satu kolom */
+@media (max-width:20em){
+  .g{grid-template-columns:1fr}
+}
+/* Kotak sangat sempit: lapangkan ruang */
+@media (max-width:26em){
+  .eye{display:none}
+  .w{padding:.7em .65em .55em}
+}
+/* Kotak pendek (tinggi kurang dari sekitar 24 em, mis. 614 x 288 px): header diringkas dan baris lebih rapat.
+   Tetap 2 kolom; bila masih kurang, hanya menggulir ke bawah. */
+@media (max-height:24em){
+  .w{padding:.5em .6em .4em}
+  .eye,.sub{display:none}
+  h1{font-size:1.2em}
+  .meter{margin:.35em 0 .4em}
+  .g{grid-auto-rows:minmax(1.9em,1fr);gap:.25em}
+  .c{padding:.15em .45em;font-size:.88em}
+  .ico{width:1.8em;height:1.8em}
+  .foot{margin-top:.3em}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<section class="w" id="w" aria-label="Peta Progres Belajar">
+  <div class="head">
+    <div class="eye">Regulasi Diri Pendidik PNF</div>
+    <h1>Peta Progres Belajar</h1>
+    <p class="sub">Centang modul yang sudah Anda pelajari.</p>
+  </div>
+  <div class="meter"><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0" id="bar"><i id="pb"></i></div><span class="cnt" id="pt" aria-live="polite">0 / 17</span></div>
+  <div class="g" id="g"></div>
+  <div class="foot"><span id="note">Progres tersimpan di peramban ini.</span><button class="rs" id="rs" type="button">Atur ulang</button></div>
+</section>
+<script>
+var I={
+ envelope:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+ target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+ map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+ quote:'<path d="M5 18v-6a4 4 0 014-4M13 18v-6a4 4 0 014-4"/><path d="M5 18h4v-4H5zM13 18h4v-4h-4z"/>',
+ camera:'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.3"/>',
+ bubble:'<path d="M5 5h14a2 2 0 012 2v8a2 2 0 01-2 2h-7l-5 4v-4H5a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M8 10h8M8 13h5"/>',
+ bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>',
+ pencil:'<path d="M4 20l1-4L16.5 4.5a2 2 0 013 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 4.8M3.5 12l1.2 1.2L7 10.8M3.5 18l1.2 1.2L7 16.8"/>',
+ clip:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M8.5 13l2.5 2.5 4.5-5"/>',
+ books:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16 6l4 1-3.2 13-4-1z"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+ book:'<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11M9 8h6"/>',
+ home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+ menu:'<path d="M4 6h16M4 12h16M4 18h10"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2"/><circle cx="12" cy="17" r=".6"/>'
+};
+var M=[["Sampul","home"],["Kata Pengantar","envelope"],["Daftar Isi","menu"],["Panduan Belajar","compass"],
+["Kompetensi & Tujuan","target"],["Peta Konsep","map"],["Quote Inspirasi","quote"],["Experience","camera"],
+["Reflection","bubble"],["Insight","bulb"],["Practice","pencil"],["Rangkuman","list"],
+["Evaluasi","clip"],["Referensi","books"],["Profil Penulis","user"],["Glosarium","book"],["Bantuan","help","wide"]];
+/* 17 modul = 17 halaman; nomor di daftar = nomor halaman (Hal. 1-17) */
+var KEY="peta-progres-belajar-v17", done={}, ok=true;
+try{done=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){done={};ok=false}
+var g=document.getElementById("g");
+M.forEach(function(m,i){
+  var b=document.createElement("button"); b.type="button"; b.className="c "+(m[2]||"")+(Math.floor(i/2)%2===0?" tua":""); b.id="c"+i;
+  b.innerHTML='<span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">'+I[m[1]]+'</svg></span><span class="l"></span><span class="k"></span>';
+  b.querySelector(".l").textContent=(i+1)+". "+m[0];
+  b.title=(i+1)+". "+m[0];
+  b.addEventListener("click",function(){if(done[i])delete done[i];else done[i]=1;save();render();});
+  g.appendChild(b);
+});
+document.getElementById("bar").setAttribute("aria-valuemax",M.length);
+function save(){try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){ok=false}}
+function render(){
+  var n=0;
+  M.forEach(function(m,i){var on=!!done[i]; if(on)n++; document.getElementById("c"+i).setAttribute("aria-pressed",on?"true":"false");});
+  document.getElementById("pt").textContent=n+" / "+M.length;
+  document.getElementById("pb").style.width=(n/M.length*100)+"%";
+  document.getElementById("bar").setAttribute("aria-valuenow",n);
+  document.getElementById("note").textContent=ok?"Progres tersimpan di peramban ini.":"Progres tidak dapat disimpan di mode ini.";
+}
+document.getElementById("rs").addEventListener("click",function(){done={};save();render();});
+render();
+</script></body></html>
